@@ -49,7 +49,6 @@ export const reducer = (state: State, action: Action): State => {
         },
       };
     case "SET_DIAGNOSIS_LIST":
-      console.log(action.payload);
       return {
         ...state,
         diagnoses: {
