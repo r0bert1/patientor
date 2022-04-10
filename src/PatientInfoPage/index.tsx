@@ -7,7 +7,7 @@ import { useStateValue, updatePatient } from "../state";
 import { Patient } from "../types";
 const PatientInfoPage = () => {
   const { id } = useParams<{ id: string }>();
-  const [{ patients }, dispatch] = useStateValue();
+  const [{ patients, diagnoses }, dispatch] = useStateValue();
   React.useEffect(() => {
     const fetchAdditionalInfo = async () => {
       try {
@@ -46,7 +46,9 @@ const PatientInfoPage = () => {
               {entry.date} <i>{entry.description}</i>
             </p>
             {entry.diagnosisCodes?.map((code) => (
-              <li key={code}>{code}</li>
+              <li key={code}>
+                {code} {diagnoses[`${code}`].name}
+              </li>
             ))}
           </div>
         ))}
