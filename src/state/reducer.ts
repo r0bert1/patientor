@@ -49,6 +49,7 @@ export const reducer = (state: State, action: Action): State => {
         const updatedPatient: Patient = {
           ...patientToUpdate,
           ssn: action.payload.ssn,
+          entries: action.payload.entries,
         };
         return {
           ...state,
