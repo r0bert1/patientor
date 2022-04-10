@@ -28,6 +28,8 @@ const PatientInfoPage = () => {
 
   const patient = patients[`${id}`];
 
+  if (!patient) return null;
+
   return (
     <div>
       <h3>{patient.name}</h3>

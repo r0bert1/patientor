@@ -29,6 +29,31 @@ export const reducer = (state: State, action: Action): State => {
         },
       };
     case "UPDATE_PATIENT":
+      const id = action.payload.id;
+      const patientToUpdate = Object.values(state.patients).find(
+        (patient) => patient.id === id
+      );
+      if (patientToUpdate) {
+        const updatedPatient: Patient = {
+          ...patientToUpdate,
+          ssn: action.payload.ssn,
+        };
+        return {
+          ...state,
+          patients: {
+            ...state.patients,
+            [action.payload.id]: updatedPatient,
+          },
+        };
+      }
+
+      return {
+        ...state,
+        patients: {
+          ...state.patients,
+          [action.payload.id]: action.payload,
+        },
+      };
     case "ADD_PATIENT":
       return {
         ...state,
