@@ -1,6 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { Button } from "semantic-ui-react";
 
 import { apiBaseUrl } from "../constants";
 import { useStateValue, updatePatient } from "../state";
@@ -11,6 +12,8 @@ import {
   HospitalEntry,
   Patient,
 } from "../types";
+import { EntryFormValues } from "../AddEntryModal/AddEntryForm";
+import AddEntryModal from "../AddEntryModal";
 
 const assertNever = (value: never): never => {
   throw new Error(
@@ -37,6 +40,13 @@ const EntryDetails: React.FC<{ entry: Entry }> = ({ entry }) => {
     default:
       return assertNever(entry);
   }
+};
+
+const healthCheckRatings = {
+  "0": "Healthy",
+  "1": "Low risk",
+  "2": "High risk",
+  "3": "Critical risk",
 };
 
 const HospitalEntryDetails = ({ entry }: { entry: HospitalEntry }) => {
@@ -74,7 +84,7 @@ const HealthCheckEntryDetails = ({ entry }: { entry: HealthCheckEntry }) => {
       <p>
         {entry.date} Health Check
         <br /> <i>{entry.description}</i>
-        <br /> Health rating: {entry.healthCheckRating === 0 ? "Good" : "Bad"}
+        <br /> Health rating: {healthCheckRatings[entry.healthCheckRating]}
       </p>
       <p>
         {entry.diagnosisCodes?.map((code) => (
@@ -122,6 +132,35 @@ const OccupationalHealthcareEntryDetails = ({
 const PatientInfoPage = () => {
   const { id } = useParams<{ id: string }>();
   const [{ patients }, dispatch] = useStateValue();
+  const [modalOpen, setModalOpen] = React.useState<boolean>(false);
+  const [error, setError] = React.useState<string | undefined>();
+
+  const openModal = (): void => setModalOpen(true);
+
+  const closeModal = (): void => {
+    setModalOpen(false);
+    setError(undefined);
+  };
+
+  const submitNewEntry = async (values: EntryFormValues) => {
+    try {
+      const { data: updatedPatient } = await axios.post<Patient>(
+        `${apiBaseUrl}/patients/${id}/entries`,
+        {
+          ...values,
+          type: "HealthCheck",
+          healthCheckRating: Number(values.healthCheckRating),
+        }
+      );
+      dispatch(updatePatient(updatedPatient));
+      closeModal();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      console.error(e.response?.data || "Unknown Error");
+      setError(e.response?.data?.error || "Unknown error");
+    }
+  };
+
   React.useEffect(() => {
     const fetchAdditionalInfo = async () => {
       try {
@@ -157,6 +196,13 @@ const PatientInfoPage = () => {
         {patient.entries?.map((entry) => (
           <EntryDetails key={entry.id} entry={entry} />
         ))}
+        <AddEntryModal
+          modalOpen={modalOpen}
+          onSubmit={submitNewEntry}
+          error={error}
+          onClose={closeModal}
+        />
+        <Button onClick={() => openModal()}>Add New Entry</Button>
       </div>
     </div>
   );
